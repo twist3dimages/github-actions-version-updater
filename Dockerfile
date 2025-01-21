@@ -20,9 +20,11 @@ RUN apt-get update \
 
 COPY ./requirements.txt .
 
+COPY . /src
+
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . ./app
+COPY src /app/src
 WORKDIR /app
 
 ENV PYTHONPATH "${PYTHONPATH}:/app"
