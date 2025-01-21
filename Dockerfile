@@ -28,6 +28,7 @@ COPY src /app/src
 WORKDIR /app
 
 RUN python -c "import os; print(os.listdir('/app'))"
+RUN python -c "import os; print('src contents:', os.listdir('/app/src'))"
 
 ENV PYTHONPATH "${PYTHONPATH}:/app"
 
