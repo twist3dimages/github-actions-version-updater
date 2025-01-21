@@ -18,15 +18,15 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /app/
-COPY src /app/src/
-
 WORKDIR /app
-
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN python -c "import os, sys; print('PYTHONPATH:', sys.path); print('Contents:', os.listdir('/app')); print('Src contents:', os.listdir('/app/src'))"
+COPY src /app/src/
+RUN touch /app/src/__init__.py
 
 ENV PYTHONPATH "/app"
 
-CMD ["python", "-m", "src.main"]
+RUN python -c "import sys; import os; print('Python path:', sys.path); print('Contents:', os.listdir('.')); print('Src contents:', os.listdir('src')); print('Try import:', __import__('src.main'))"
+
+CMD ["python", "/app/src/main.py"]
