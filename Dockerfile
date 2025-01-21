@@ -27,6 +27,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src /app/src
 WORKDIR /app
 
+RUN python -c "import os; print(os.listdir('/app'))"
+
 ENV PYTHONPATH "${PYTHONPATH}:/app"
 
 CMD ["python", "-m", "src.main"]
