@@ -6,7 +6,7 @@ from typing import Any
 import github_action_utils as gha_utils  # type: ignore
 import requests
 import yaml
-from packaging.version import LegacyVersion, Version, parse
+from packaging.version import Version, parse
 
 from .config import ActionEnvironment, Configuration, ReleaseType, UpdateVersionWith
 from .run_git import (
@@ -220,7 +220,7 @@ class GitHubActionsVersionUpdater:
 
     def _get_github_releases(
         self, action_repository: str
-    ) -> list[dict[str, str | Version | LegacyVersion]]:
+    ) -> list[dict[str, str | Version]]:
         """Get the GitHub releases using GitHub API"""
         url = f"{self.github_api_url}/repos/{action_repository}/releases?per_page=50"
 
@@ -283,7 +283,7 @@ class GitHubActionsVersionUpdater:
             )
 
         def filter_func(
-            release_tag: LegacyVersion | Version, current_version: Version
+            release_tag: Version, current_version: Version
         ) -> bool:
             return any(check(release_tag, current_version) for check in checks)
 
@@ -299,9 +299,9 @@ class GitHubActionsVersionUpdater:
         if not github_releases:
             return latest_release
 
-        parsed_current_version: LegacyVersion | Version = parse(current_version)
+        parsed_current_version: Version = parse(current_version)
 
-        if isinstance(parsed_current_version, LegacyVersion):
+        if not parsed_current_version.release:
             gha_utils.warning(
                 f"Current version (`{current_version}`) of `{action_repository}` does not follow "
                 "Semantic Versioning specification. This can yield unexpected results, "
