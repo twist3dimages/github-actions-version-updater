@@ -474,7 +474,8 @@ class GitHubActionsVersionUpdater:
                 yield from self._get_all_actions(element)
 
 
-if __name__ == "__main__":
+def main():
+    gha_utils.notice("Starting GitHub Actions Version Updater...")
     with gha_utils.group("Parse Configuration"):
         user_configuration = Configuration()
         action_environment = ActionEnvironment()
@@ -499,3 +500,7 @@ if __name__ == "__main__":
         actions_version_updater.run()
 
     display_whats_new()
+
+
+if __name__ == "__main__":
+    main()

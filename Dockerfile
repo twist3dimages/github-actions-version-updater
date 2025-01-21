@@ -22,7 +22,7 @@ WORKDIR /app
 COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Make sure Python can find the modules
-ENV PYTHONPATH="/app:${PYTHONPATH}"
+# Make sure the src directory is in the Python path
+ENV PYTHONPATH="/app"
 
 CMD ["python", "-m", "src.main"]
