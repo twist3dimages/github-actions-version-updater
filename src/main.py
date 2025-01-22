@@ -218,10 +218,18 @@ class GitHubActionsVersionUpdater:
                 f"branch on {version_data['commit_date']}\n"
             )
 
-    def _get_github_releases(
-        self, action_repository: str
-    ) -> list[dict[str, str | Version]]:
-        """Get the GitHub releases using GitHub API"""
+    def _clean_version_tag(self, version_tag: str) -> str:
+        """Clean version tag to make it compatible with packaging.version.parse"""
+        # Remove 'v' prefix if present
+        if version_tag.startswith('v'):
+            version_tag = version_tag[1:]
+
+        # Remove any extra information after the version number (e.g., -node20, -beta, etc.)
+        version_parts = version_tag.split('-')
+        return version_parts[0]
+
+    def _get_github_releases(self, action_repository: str) -> list[dict[str, Any]]:
+        """Get GitHub releases for an action"""
         url = f"{self.github_api_url}/repos/{action_repository}/releases?per_page=50"
 
         response = requests.get(
@@ -237,7 +245,7 @@ class GitHubActionsVersionUpdater:
                         "published_at": release["published_at"],
                         "html_url": release["html_url"],
                         "tag_name": release["tag_name"],
-                        "tag_name_parsed": parse(release["tag_name"]),
+                        "tag_name_parsed": parse(self._clean_version_tag(release["tag_name"])),
                     }
                     for release in response_data
                     if not release["prerelease"]
