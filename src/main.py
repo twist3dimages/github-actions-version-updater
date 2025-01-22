@@ -171,11 +171,10 @@ class GitHubActionsVersionUpdater:
                             f'Updating "{action}" with "{updated_action}"...'
                         )
                         updated_workflow_data = re.sub(
-                            rf"({action})(\s+['\"]?|['\"]?$)",
-                            rf"{updated_action}\2",
-                            updated_workflow_data,
-                            0,
-                            re.MULTILINE,
+                            pattern=rf"({action})(\s+['\"]?|['\"]?$)",
+                            repl=rf"{updated_action}\2",
+                            string=updated_workflow_data,
+                            flags=re.MULTILINE,
                         )
                     else:
                         gha_utils.echo(f'No updates found for "{action_repository}"')
