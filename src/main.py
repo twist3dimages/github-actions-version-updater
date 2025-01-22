@@ -6,17 +6,17 @@ from typing import Any
 import github_action_utils as gha_utils  # type: ignore
 import requests
 import yaml
-from packaging.version import LegacyVersion, Version, parse, InvalidVersion
+from packaging.version import Version, parse
 
-from .config import ActionEnvironment, Configuration, ReleaseType, UpdateVersionWith
-from .run_git import (
+from src.config import ActionEnvironment, Configuration, ReleaseType, UpdateVersionWith
+from src.run_git import (
     configure_git_author,
     configure_safe_directory,
     create_new_git_branch,
     git_commit_changes,
     git_has_changes,
 )
-from .utils import (
+from src.utils import (
     add_git_diff_to_job_summary,
     add_pull_request_labels,
     add_pull_request_reviewers,
@@ -220,7 +220,7 @@ class GitHubActionsVersionUpdater:
 
     def _get_github_releases(
         self, action_repository: str
-    ) -> list[dict[str, str | Version | LegacyVersion]]:
+    ) -> list[dict[str, str | Version]]:
         """Get the GitHub releases using GitHub API"""
         url = f"{self.github_api_url}/repos/{action_repository}/releases?per_page=50"
 
@@ -232,28 +232,16 @@ class GitHubActionsVersionUpdater:
             response_data = response.json()
 
             if response_data:
-                releases = []
-                for release in response_data:
-                    if not release["prerelease"]:
-                        tag_name = release["tag_name"]
-                        try:
-                            tag_name_parsed = parse(tag_name)
-                        except InvalidVersion:
-                            # Strip non-standard suffixes and try parsing again
-                            tag_name = re.sub(r'-.*$', '', tag_name)
-                            try:
-                                tag_name_parsed = parse(tag_name)
-                            except InvalidVersion:
-                                gha_utils.warning(
-                                    f"Skipping invalid version tag: {tag_name}"
-                                )
-                                continue
-                        releases.append({
-                            "published_at": release["published_at"],
-                            "html_url": release["html_url"],
-                            "tag_name": tag_name,
-                            "tag_name_parsed": tag_name_parsed,
-                        })
+                releases = [
+                    {
+                        "published_at": release["published_at"],
+                        "html_url": release["html_url"],
+                        "tag_name": release["tag_name"],
+                        "tag_name_parsed": parse(release["tag_name"]),
+                    }
+                    for release in response_data
+                    if not release["prerelease"]
+                ]
                 # Sort through the releases returned by GitHub API using tag_name
                 return sorted(
                     releases,
@@ -295,7 +283,7 @@ class GitHubActionsVersionUpdater:
             )
 
         def filter_func(
-            release_tag: LegacyVersion | Version, current_version: Version
+            release_tag: Version, current_version: Version
         ) -> bool:
             return any(check(release_tag, current_version) for check in checks)
 
@@ -311,9 +299,9 @@ class GitHubActionsVersionUpdater:
         if not github_releases:
             return latest_release
 
-        parsed_current_version: LegacyVersion | Version = parse(current_version)
+        parsed_current_version: Version = parse(current_version)
 
-        if isinstance(parsed_current_version, LegacyVersion):
+        if not parsed_current_version.release:
             gha_utils.warning(
                 f"Current version (`{current_version}`) of `{action_repository}` does not follow "
                 "Semantic Versioning specification. This can yield unexpected results, "
