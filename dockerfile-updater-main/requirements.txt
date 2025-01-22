@@ -1,6 +1,0 @@
-pytest
-requests
-alpinepkgs
-pygithub
-dockerfile-parse
-awesomeversion
