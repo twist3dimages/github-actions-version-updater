@@ -508,4 +508,3 @@ if __name__ == "__main__":
         actions_version_updater.run()
 
     display_whats_new()
-`
