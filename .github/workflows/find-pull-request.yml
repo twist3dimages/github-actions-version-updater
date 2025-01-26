@@ -1,0 +1,55 @@
+﻿name: Find, Approve and Merge Pull Requests
+on:
+  - push
+  - pull_request
+  - workflow_dispatch
+permissions:
+    issues: write
+    pull-requests: write
+    contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+    #   - name: npm install and build
+    #     run: |
+    #       npm ci
+    #       npm run build
+     # Set up Python environment
+     # - name: Setup Python
+      #  uses: actions/setup-python@v5.3.0 # Latest version of setup-python action
+      #  with:
+      #    python-version: "3.x"
+      - name: Find Pull Request
+        uses: juliangruber/find-pull-request-action@v1.9.0
+        id: find-pull-request
+        with:
+         # base: main
+       #   author: charl3y15
+          state: open
+          repo: Estes-Forwarding-Worldwide/freshservice-offboarding
+          sort: created
+          direction: desc
+          labels: automated
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo "Pull Request ${{ steps.find-pull-request.outputs.number }} (${{ steps.find-pull-request.outputs.head-sha }})"
+        env:
+          number: ${{ steps.find-pull-request.outputs.number }}
+          sha: ${{ steps.find-pull-request.outputs.head-sha }}
+          title: ${{ steps.find-pull-request.outputs.title }}
+          base-repo: ${{ steps.find-pull-request.outputs.base-repo }}
+      - name: Approve Pull Request
+        uses: juliangruber/approve-pull-request-action@v2.0.6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          number: ${{ steps.find-pull-request.outputs.number }}
+          repo: Estes-Forwarding-Worldwide/freshservice-offboarding
+      - name: Merge Pull Request
+        uses: juliangruber/merge-pull-request-action@v1.3.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          number: ${{ steps.find-pull-request.outputs.number }}
+          method: merge
+         # repo: juliangruber/octokit-action
