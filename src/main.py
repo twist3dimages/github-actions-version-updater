@@ -153,7 +153,7 @@ class GitHubActionsVersionUpdater:
                     )
 
                     if not new_version:
-                        gha_utils.warning(
+                        gha_utils.notice(
                             f"Could not find any new version for {action}. Skipping..."
                         )
                         continue
@@ -218,14 +218,10 @@ class GitHubActionsVersionUpdater:
             )
 
     def _clean_version_tag(self, version_tag: str) -> str:
-        """Clean version tag to make it compatible with packaging.version.parse"""
-        # Remove 'v' prefix if present
+        """Keep the entire tag except for leading 'v'."""
         if version_tag.startswith('v'):
             version_tag = version_tag[1:]
-
-        # Remove any extra information after the version number (e.g., -node20, -beta, etc.)
-        version_parts = version_tag.split('-')
-        return version_parts[0]
+        return version_tag
 
     def _get_github_releases(self, action_repository: str) -> list[dict[str, Any]]:
         """Get GitHub releases for an action"""
@@ -256,7 +252,7 @@ class GitHubActionsVersionUpdater:
                     reverse=True,
                 )
 
-        gha_utils.warning(
+        gha_utils.notice(
             f"Could not find any release for "
             f'"{action_repository}", GitHub API Response: {response.json()}'
         )
@@ -309,10 +305,9 @@ class GitHubActionsVersionUpdater:
         parsed_current_version: Version = parse(current_version)
 
         if not parsed_current_version.release:
-            gha_utils.warning(
-                f"Current version (`{current_version}`) of `{action_repository}` does not follow "
-                "Semantic Versioning specification. This can yield unexpected results, "
-                "please be careful while using the updates suggested by this action."
+            gha_utils.notice(
+                f"Parsing failed for `{current_version}` of `{action_repository}`, "
+                "falling back to latest release."
             )
             latest_release = github_releases[0]
         else:
@@ -328,11 +323,18 @@ class GitHubActionsVersionUpdater:
                 )
             except AttributeError:
                 latest_release = github_releases[0]
-                gha_utils.warning(
+                gha_utils.notice(
                     f"GitHub releases of `{action_repository}` does not follow "
                     "Semantic Versioning specification. This can yield unexpected results, "
                     "please be careful while using the updates suggested by this action."
                 )
+
+            if not latest_release:
+                gha_utils.notice(
+                    f"No strict match found for `{current_version}` of "
+                    f"`{action_repository}`, using newest available release."
+                )
+                latest_release = github_releases[0]
 
         return latest_release
 
@@ -358,7 +360,7 @@ class GitHubActionsVersionUpdater:
                 "commit_date": response_data["commit"]["author"]["date"],
             }
 
-        gha_utils.warning(
+        gha_utils.notice(
             f"Could not find commit data for tag/branch {tag_or_branch_name} on "
             f'"{action_repository}", GitHub API Response: {response.json()}'
         )
@@ -375,7 +377,7 @@ class GitHubActionsVersionUpdater:
         if response.status_code == 200:
             return response.json()["default_branch"]
 
-        gha_utils.warning(
+        gha_utils.notice(
             f"Could not find default branch for "
             f'"{action_repository}", GitHub API Response: {response.json()}'
         )
@@ -506,3 +508,4 @@ if __name__ == "__main__":
         actions_version_updater.run()
 
     display_whats_new()
+`
