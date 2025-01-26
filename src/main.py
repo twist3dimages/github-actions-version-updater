@@ -218,10 +218,14 @@ class GitHubActionsVersionUpdater:
             )
 
     def _clean_version_tag(self, version_tag: str) -> str:
-        """Keep the entire tag except for leading 'v'."""
+        """Clean version tag to make it compatible with packaging.version.parse"""
+        # Remove 'v' prefix if present
         if version_tag.startswith('v'):
             version_tag = version_tag[1:]
-        return version_tag
+
+        # Remove any extra information after the version number (e.g., -node20, -beta, etc.)
+        version_parts = version_tag.split('-')
+        return version_parts[0]
 
     def _get_github_releases(self, action_repository: str) -> list[dict[str, Any]]:
         """Get GitHub releases for an action"""
