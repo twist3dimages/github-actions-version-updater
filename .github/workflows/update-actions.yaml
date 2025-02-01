@@ -25,4 +25,5 @@ jobs:
           token: ${{ secrets.WORKFLOW_SECRET }}
           update_version_with: "release-tag"
           release_types: "major"
+          pull_request_labels: "dependencies, automated"
           ignore: 'saadmk11/github-actions-version-updater@main'
