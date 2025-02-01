@@ -1,6 +1,5 @@
 name: Find, Approve and Merge Pull Requests
 on:
-  - push
   - pull_request
   - workflow_dispatch
 permissions:
