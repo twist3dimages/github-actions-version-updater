@@ -32,7 +32,7 @@ jobs:
           base-repo: ${{ steps.find-pull-request.outputs.base-repo }}
       - name: Approve Pull Request
         if: steps.find-pull-request.outputs.number != ''
-        uses: juliangruber/approve-pull-request-action@v2.0.6
+        uses: juliangruber/approve-pull-request-action@v2.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           number: ${{ steps.find-pull-request.outputs.number }}
