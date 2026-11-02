@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7.0.1
       - name: Find Pull Request
-        uses: juliangruber/find-pull-request-action@v1.11.1
+        uses: juliangruber/find-pull-request-action@v1.12.0
         id: find-pull-request
         with:
          # base: main
